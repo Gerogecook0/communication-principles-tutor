@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: communication-principles-tutor
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    plan: free
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: NODE_ENV
+        value: production
+      - key: MODEL_PROVIDER
+        value: openrouter
+      - key: AI_MODEL
+        value: openrouter/free
+      - key: OPENROUTER_API_KEY
+        sync: false
