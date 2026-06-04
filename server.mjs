@@ -6,23 +6,18 @@ const MODEL_PROVIDER = process.env.MODEL_PROVIDER || 'openrouter';
 const AI_MODEL = process.env.AI_MODEL || 'openrouter/free';
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
 
-const CHAPTERS = [
-  '通信系统基本概念','确知信号分析','随机过程','信道与噪声','模拟调制','幅度调制 AM、DSB、SSB、VSB','角度调制 FM、PM','抽样定理','脉冲编码调制 PCM','数字基带传输','码间串扰','眼图','数字带通传输','ASK、FSK、PSK、DPSK','信息论基础','信道容量','差错控制编码','线性分组码','循环码','卷积码'
-];
+const CHAPTERS = ['通信系统基本概念','确知信号分析','随机过程','信道与噪声','模拟调制','幅度调制 AM、DSB、SSB、VSB','角度调制 FM、PM','抽样定理','脉冲编码调制 PCM','数字基带传输','码间串扰','眼图','数字带通传输','ASK、FSK、PSK、DPSK','信息论基础','信道容量','差错控制编码','线性分组码','循环码','卷积码'];
 
 const KNOWLEDGE = `
-通信系统的基本任务是在发送端把消息变换为适合信道传输的信号，在接收端尽可能准确地恢复消息。典型通信系统由信源、发送设备或发送端变换、信道、接收设备或接收端变换、信宿组成。更完整的数字通信模型还包括信源编码、信道编码、调制、解调、信道译码和信源译码。通信的目的是传输消息中所包含的信息。消息是信息的物理表现形式，信息是消息的有效内容，信号是消息的传输载体。
+通信系统的基本任务是在发送端把消息变换为适合信道传输的信号，在接收端尽可能准确地恢复消息。典型通信系统由信源、发送设备、信道、接收设备和信宿组成。更完整的数字通信模型还包括信源编码、信道编码、调制、解调、信道译码和信源译码。通信的目的是传输消息中所包含的信息。消息是信息的物理表现形式，信息是消息的有效内容，信号是消息的传输载体。
 通信系统常用性能指标包括有效性和可靠性。有效性通常用带宽、传输速率、频带利用率衡量。可靠性通常用信噪比、误码率、误符号率、输出信噪比衡量。
 信源编码的主要作用是去除冗余、提高有效性；信道编码通过引入受控冗余提高可靠性；调制把基带信号变换为适合信道传输的带通信号；解调完成相反变换。
-确知信号可以从时域和频域分析。傅里叶变换用于描述信号频谱，能量信号用能量谱密度描述，功率信号用功率谱密度描述。线性时不变系统输出频谱等于输入频谱乘以系统传输函数。
-随机过程用于描述通信中的随机信号和噪声。平稳随机过程的统计特性不随时间平移而改变。高斯白噪声常用于建模加性噪声，其功率谱密度在频域近似为常数。
-信道可分为有线信道和无线信道，也可分为恒参信道和随参信道。信道会带来衰减、失真、噪声和干扰。加性高斯白噪声信道是通信理论中的基本模型。
 抽样定理：低通信号最高频率为 fm 时，若抽样频率 fs >= 2fm，理论上可由抽样值无失真恢复原信号；fs < 2fm 会发生频谱混叠。PCM 包括抽样、量化和编码。均匀量化噪声功率约为 Delta^2/12。非均匀量化通过 A 律或 mu 律压扩改善小信号量化信噪比。
-AM 含载波和上下边带，带宽为 2W，可用包络检波但功率效率低。DSB-SC 抑制载波，功率效率高，带宽仍为 2W，需要相干解调。SSB 只传一个边带，带宽为 W，频带利用率高。VSB 传一个完整边带和另一边带的一部分，常用于电视图像。
+AM 含载波和上下边带，带宽为 2W，可用包络检波但功率效率低。DSB-SC 抑制载波，功率效率高，带宽仍为 2W，需要相干解调。SSB 只传一个边带，带宽为 W，频带利用率高。VSB 传一个完整边带和另一边带的一部分。
 FM 的瞬时频率随调制信号变化，包络近似恒定，抗幅度噪声能力强。单音调频指数 beta=Delta f/fm。Carson 公式：B≈2(Delta f+fm)=2fm(beta+1)。FM 存在门限效应。
 数字基带传输直接在低通信道上传输码元波形。码间串扰 ISI 是相邻码元波形在抽样判决时相互干扰造成的失真。无码间串扰条件：系统总冲激响应在抽样时刻除主抽样点外其他码元间隔处为零。奈奎斯特第一准则的频域表述是等效传输函数按码元速率平移后的和为常数。升余弦系统带宽 B=(1+alpha)Rs/2。
-匹配滤波器是在加性白噪声中最大化指定抽样时刻输出信噪比的线性滤波器，冲激响应与发送信号的时间反转共轭成比例。眼图张开越大，噪声容限和定时容限越高；眼图闭合说明码间串扰、噪声或定时抖动严重。
-ASK 通过改变载波幅度表示符号，抗噪声能力较差；FSK 通过改变载波频率表示符号，非相干接收较容易；PSK 通过改变载波相位表示符号，功率效率较高；DPSK 用相邻码元相位差承载信息，避免相干 PSK 的相位模糊问题；QAM 同时改变同相和正交分量，频带利用率高。BPSK 相干检测误码率 Pb=Q(sqrt(2Eb/N0))。QPSK 每符号携带 2 bit，频带利用率高于 BPSK。
+匹配滤波器是在加性白噪声中最大化指定抽样时刻输出信噪比的线性滤波器。眼图张开越大，噪声容限和定时容限越高；眼图闭合说明码间串扰、噪声或定时抖动严重。
+ASK 通过改变载波幅度表示符号；FSK 通过改变载波频率表示符号；PSK 通过改变载波相位表示符号；DPSK 用相邻码元相位差承载信息；QAM 同时改变同相和正交分量，频带利用率高。BPSK 相干检测误码率 Pb=Q(sqrt(2Eb/N0))。
 信息量 I(x)=-log2 p(x)。信源熵 H(X) 是平均自信息，表示离散无记忆信源的平均不确定性。AWGN 信道容量 C=B log2(1+S/N)。香农第二定理指出传输速率低于信道容量时存在编码使误码率任意小。
 差错控制编码通过引入受控冗余提升抗差错能力。分组码参数 (n,k)，码率 R=k/n。线性分组码可用生成矩阵 G 编码，用校验矩阵 H 检验。最小码距 dmin 决定检错纠错能力：可检测 e 个错误需要 dmin >= e+1；可纠正 t 个错误需要 dmin >= 2t+1。循环码可用生成多项式实现，CRC 常用于检错。卷积码有记忆，Viterbi 算法是常用译码方法。
 `;
@@ -33,82 +28,26 @@ function sentences() {
   return KNOWLEDGE.split(/(?<=[。！？；.!?])\s*/).map(s => s.trim()).filter(s => s.length > 8);
 }
 
-function terms(text) {
-  return Array.from(new Set(String(text).match(/[\u4e00-\u9fff]{2,}|[a-zA-Z0-9]+/g) || []));
-}
-
 function retrieve(query, limit = 8) {
   const q = String(query || '');
-  const ts = terms(q);
-  const aliases = [
-    ['组成', ['信源','发送','信道','接收','信宿','基本部分']],
-    ['通信系统', ['信源','信道','信宿','发送设备','接收设备']],
-    ['性能', ['有效性','可靠性','误码率','频带利用率']],
-    ['抽样', ['抽样定理','fs','2fm','混叠']],
-    ['码间串扰', ['ISI','奈奎斯特','升余弦']],
-    ['PCM', ['抽样','量化','编码']],
-    ['香农', ['信道容量','C=B log2(1+S/N)']],
-  ];
-  for (const [hit, more] of aliases) if (q.includes(hit)) ts.push(...more);
-  return sentences()
-    .map(s => ({ text: s, score: ts.reduce((n, t) => n + (s.includes(t) ? 2 : 0), 0) + (q.includes('通信系统') && s.includes('通信系统') ? 4 : 0) }))
-    .filter(x => x.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit)
-    .map(x => x.text)
-    .join('\n');
+  const rawTerms = q.match(/[\u4e00-\u9fff]{2,}|[a-zA-Z0-9]+/g) || [];
+  const terms = new Set(rawTerms);
+  if (q.includes('通信系统') || q.includes('组成') || q.includes('部分')) ['信源','发送设备','信道','接收设备','信宿','基本任务'].forEach(t => terms.add(t));
+  if (q.includes('抽样') || q.includes('采样')) ['抽样定理','fs','2fm','混叠'].forEach(t => terms.add(t));
+  if (q.includes('码间串扰') || q.includes('ISI')) ['ISI','奈奎斯特','升余弦'].forEach(t => terms.add(t));
+  return sentences().map(s => ({ text: s, score: [...terms].reduce((n, t) => n + (s.includes(t) ? 1 : 0), 0) })).filter(x => x.score > 0).sort((a, b) => b.score - a.score).slice(0, limit).map(x => x.text).join('\n');
 }
 
-function deterministicAsk(input, context) {
+function deterministicAsk(input) {
   const q = String(input || '');
-  if (/通信系统.*(组成|部分|环节)|由哪些/.test(q)) {
-    return '通信系统的基本组成可以概括为：信源、发送设备、信道、接收设备和信宿。\n\n其中，信源产生要传输的消息；发送设备把消息变换成适合信道传输的信号，常包含编码和调制；信道负责传输信号，同时可能引入噪声和失真；接收设备完成解调、译码等处理，尽可能恢复原消息；信宿是消息最终到达的对象。\n\n在数字通信系统中，还常把发送端和接收端进一步细分为信源编码、信道编码、调制、解调、信道译码和信源译码等模块。';
-  }
-  if (/通信.*(是什么|定义|目的)|什么是通信/.test(q)) {
-    return '通信就是把消息中包含的信息从一方传送到另一方。通信原理中通常把消息变换成适合信道传输的信号，在接收端再尽可能准确地恢复消息。\n\n要区分三个概念：信息是消息中的有效内容；消息是信息的物理表现形式；信号是消息在通信系统中传输的载体。';
-  }
-  if (/性能|有效性|可靠性/.test(q)) {
-    return '通信系统的主要性能指标包括有效性和可靠性。\n\n有效性反映传输资源利用得是否充分，常用传输速率、带宽和频带利用率衡量。可靠性反映接收端恢复消息的准确程度，常用信噪比、误码率、误符号率等衡量。一般来说，通信系统设计常需要在有效性和可靠性之间折中。';
-  }
-  if (/抽样|采样/.test(q)) {
-    return '抽样定理说明：若低通信号最高频率为 fm，只要抽样频率 fs >= 2fm，理论上就可以由抽样值无失真恢复原信号。\n\n其中 2fm 称为奈奎斯特抽样率。如果 fs < 2fm，会发生频谱混叠，恢复出的信号会失真。';
-  }
-  if (/码间串扰|ISI/.test(q)) {
-    return '码间串扰 ISI 是指相邻码元波形在抽样判决时相互重叠干扰，导致当前码元判决受到前后码元影响。\n\n无码间串扰的关键条件是：系统总冲激响应在抽样时刻，除当前码元对应的主抽样点外，其他码元间隔处应为零。奈奎斯特第一准则就是用来设计满足无码间串扰条件的传输系统。';
-  }
-  if (/PCM|脉冲编码/.test(q)) {
-    return 'PCM 即脉冲编码调制，基本过程包括抽样、量化和编码。\n\n抽样把连续时间信号变成离散时间样值；量化把连续幅度样值映射到有限个量化电平；编码再把量化后的电平表示成二进制码组。';
-  }
-  if (/香农|信道容量/.test(q)) {
-    return 'AWGN 信道容量公式为 C = B log2(1 + S/N)。\n\n其中 C 是信道容量，B 是信道带宽，S/N 是信噪比。它表示在给定带宽和信噪比条件下，理论上能够可靠传输的最高信息速率。';
-  }
-  return context ? context.split('\n').slice(0, 5).join('\n') : '当前知识库资料不足，无法可靠回答。';
-}
-
-function isBadModelAnswer(text) {
-  const s = String(text || '').trim();
-  return !s || s.length < 45 || /请问您想了解|你想了解哪项|无法回答|不知道|没有提供/.test(s);
-}
-
-async function modelAnswer(task, input) {
-  const context = retrieve(input, 8);
-  const fallback = task === 'ask' ? deterministicAsk(input, context) : task === 'follow' ? answerFollow(input) : localQuestion(input);
-  if (!OPENROUTER_API_KEY) return fallback;
-
-  const prompt = `你是通信原理课程智能助教。必须直接回答，不要反问用户。只基于给定资料回答或出题，不显示依据来源、文件名、页码、片段编号。若资料不足，明确说“当前知识库资料不足”。\n\n资料：\n${context}\n\n任务：${task}\n\n用户要求：\n${input}`;
-  try {
-    const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + OPENROUTER_API_KEY, 'HTTP-Referer': 'https://render.com', 'X-Title': 'Communication Principles Tutor' },
-      body: JSON.stringify({ model: AI_MODEL, messages: [{ role: 'user', content: prompt }], temperature: 0.15 })
-    });
-    if (!r.ok) throw new Error(await r.text());
-    const j = await r.json();
-    const answer = j.choices?.[0]?.message?.content?.trim() || '';
-    return isBadModelAnswer(answer) ? fallback : answer;
-  } catch {
-    return fallback;
-  }
+  if (/通信系统.*(组成|部分|环节)|由哪些/.test(q)) return '通信系统的基本组成可以概括为：信源、发送设备、信道、接收设备和信宿。\n\n信源产生要传输的消息；发送设备把消息变换成适合信道传输的信号；信道负责传输信号并可能引入噪声和失真；接收设备完成解调、译码等处理，尽可能恢复原消息；信宿是消息最终到达的对象。\n\n在数字通信系统中，还常进一步细分为信源编码、信道编码、调制、解调、信道译码和信源译码等模块。';
+  if (/通信.*(是什么|定义|目的)|什么是通信/.test(q)) return '通信就是把消息中包含的信息从一方传送到另一方。通信原理中通常把消息变换成适合信道传输的信号，在接收端再尽可能准确地恢复消息。\n\n信息是消息中的有效内容，消息是信息的物理表现形式，信号是消息在通信系统中传输的载体。';
+  if (/性能|有效性|可靠性/.test(q)) return '通信系统的主要性能指标包括有效性和可靠性。\n\n有效性反映传输资源利用得是否充分，常用传输速率、带宽和频带利用率衡量。可靠性反映接收端恢复消息的准确程度，常用信噪比、误码率、误符号率等衡量。';
+  if (/抽样|采样/.test(q)) return '抽样定理说明：若低通信号最高频率为 fm，只要抽样频率 fs >= 2fm，理论上就可以由抽样值无失真恢复原信号。若 fs < 2fm，会发生频谱混叠。';
+  if (/码间串扰|ISI/.test(q)) return '码间串扰 ISI 是指相邻码元波形在抽样判决时相互重叠干扰，导致当前码元判决受到前后码元影响。无码间串扰的关键条件是：系统总冲激响应在抽样时刻，除当前码元对应的主抽样点外，其他码元间隔处应为零。';
+  if (/PCM|脉冲编码/.test(q)) return 'PCM 即脉冲编码调制，基本过程包括抽样、量化和编码。抽样把连续时间信号变成离散时间样值；量化把连续幅度样值映射到有限个量化电平；编码再把量化后的电平表示成二进制码组。';
+  if (/香农|信道容量/.test(q)) return 'AWGN 信道容量公式为 C = B log2(1 + S/N)。其中 C 是信道容量，B 是信道带宽，S/N 是信噪比。它表示在给定带宽和信噪比条件下，理论上能够可靠传输的最高信息速率。';
+  return '';
 }
 
 function localQuestion(input) {
@@ -126,17 +65,38 @@ function answerFollow(text) {
   return '本题答案是 A。A 直接对应通信系统的基本任务：发送端把消息变换为适合信道传输的信号，接收端尽可能准确地恢复消息。';
 }
 
-async function readJson(req) {
-  let s = '';
-  for await (const c of req) s += c;
-  return s ? JSON.parse(s) : {};
+function isBadModelAnswer(text) {
+  const s = String(text || '').trim();
+  return !s || s.length < 45 || /请问您想了解|你想了解哪项|无法回答|不知道|没有提供|资料不足|知识库资料不足/.test(s);
 }
 
-function send(res, status, obj) {
-  const body = typeof obj === 'string' ? obj : JSON.stringify(obj);
-  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
-  res.end(body);
+async function callModel(task, input, fallback) {
+  if (!OPENROUTER_API_KEY) return fallback;
+  const context = retrieve(input, 8);
+  const prompt = `你是通信原理课程智能助教。必须直接回答，不要反问用户。只基于给定资料回答或出题，不显示依据来源、文件名、页码、片段编号。\n\n资料：\n${context}\n\n任务：${task}\n\n用户要求：\n${input}`;
+  try {
+    const r = await fetch('https://openrouter.ai/api/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + OPENROUTER_API_KEY, 'HTTP-Referer': 'https://render.com', 'X-Title': 'Communication Principles Tutor' }, body: JSON.stringify({ model: AI_MODEL, messages: [{ role: 'user', content: prompt }], temperature: 0.15 }) });
+    if (!r.ok) throw new Error(await r.text());
+    const j = await r.json();
+    const answer = j.choices?.[0]?.message?.content?.trim() || '';
+    return isBadModelAnswer(answer) ? fallback : answer;
+  } catch { return fallback; }
 }
+
+async function modelAnswer(task, input) {
+  if (task === 'ask') {
+    const fixed = deterministicAsk(input);
+    if (fixed) return fixed;
+    const context = retrieve(input, 5);
+    const fallback = context || '当前知识库资料不足，无法可靠回答。';
+    return callModel(task, input, fallback);
+  }
+  if (task === 'follow') return callModel(task, input, answerFollow(input));
+  return callModel(task, input, localQuestion(input));
+}
+
+async function readJson(req) { let s = ''; for await (const c of req) s += c; return s ? JSON.parse(s) : {}; }
+function send(res, status, obj) { res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(obj)); }
 
 createServer(async (req, res) => {
   try {
@@ -147,7 +107,5 @@ createServer(async (req, res) => {
     if (req.method === 'POST' && url.pathname === '/api/generate-questions') { const b = await readJson(req); send(res, 200, { result: await modelAnswer('generate', `章节：${b.chapter}\n题型：${b.questionType}\n难度：${b.difficulty}\n数量：${b.count}`) }); return; }
     if (req.method === 'POST' && url.pathname === '/api/follow-up') { const b = await readJson(req); send(res, 200, { result: await modelAnswer('follow', `当前题目：${b.currentQuestion || ''}\n追问：${b.question || ''}`) }); return; }
     send(res, 404, { error: 'Not found' });
-  } catch (e) {
-    send(res, 400, { error: e.message || String(e) });
-  }
+  } catch (e) { send(res, 400, { error: e.message || String(e) }); }
 }).listen(PORT, HOST, () => console.log(`Listening on ${HOST}:${PORT}`));
